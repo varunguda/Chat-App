@@ -5,18 +5,47 @@ import { Server } from "socket.io"
 
 const server = http.createServer(app)
 
-const io = new Server(server, {
-    cors:{
+interface ServerToClientEvents {
+    noArg: () => void;
+    basicEmit: (a: number, b: string, c: Buffer) => void;
+    withAck: (d: string, callback: (e: number) => void) => void;
+}
+
+interface ClientToServerEvents {
+    hello: () => void;
+}
+
+interface InterServerEvents {
+    ping: () => void;
+}
+
+interface SocketData {
+    name: string;
+    age: number;
+}
+
+interface ReceivedData {
+    message: string;
+    room: string;
+}
+
+
+const io = new Server<ServerToClientEvents, ClientToServerEvents, InterServerEvents, SocketData>(server, {
+    cors: {
         origin: "http://localhost:5173",
         methods: ["GET", "POST"]
     }
 })
 
-io.on("connection", (socket) => {
+io.on("connection", (socket: any) => {
     console.log(`✅ User connected: ${socket.id}`)
 
-    socket.on("send_message", (data) => {
-        socket.broadcast.emit("received_message", data)
+    socket.on("join_room", (data: string) => {
+        socket.join(data)
+    })
+
+    socket.on("send_message", (data: ReceivedData) => {
+        socket.to(data.room).emit("received_message", data)
     })
 })
 
