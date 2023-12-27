@@ -1,4 +1,4 @@
-import express from "express"
+import express, { NextFunction, Request, Response } from "express"
 import cors from "cors"
 import cookieParser from "cookie-parser"
 import chatRoutes from "./routes/chat.routes"
@@ -24,6 +24,12 @@ app.use(cors({
     methods: ["GET", "POST", "DELETE", "PUT"]
 }))
 
+app.use("/health", (req: Request, res: Response, next: NextFunction) => {
+  return res.json({
+    success: true,
+    message: "Welcome to Chat-App"
+  })
+})
 
 app.use("/api/v1/users", userRoutes)
 app.use("/api/v1/chat", chatRoutes)
